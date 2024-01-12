@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CSV to MP4 Downloader</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.3/papaparse.min.js"></script>
+  <link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-48x48.png" sizes="48x48" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-96x96.png" sizes="96x96" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-144x144.png" sizes="144x144" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-192x192.png" sizes="192x192" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-256x256.png" sizes="256x256" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-384x384.png" sizes="384x384" type="image/png">
+<link rel="icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon-512x512.png" sizes="512x512" type="image/png">
+
+<link rel="apple-touch-icon" sizes="180x180" href="https://www.vidyard.com/wp-content/uploads/fbrfg/apple-touch-icon.png">
+
+<link rel="shortcut icon" href="https://www.vidyard.com/wp-content/uploads/fbrfg/favicon.ico">
+
+<!-- Vidyard logo -->
+<style>
+  .vidyard-logo {
+    display: block;
+    width: 200px; /* Adjust the size as needed */
+    margin: 20px auto; /* Adjust the margin as needed */
+  }
+</style>
+  <style>
+    * {
+      font-family: sans-serif;
+    }
+
+    body {
+      background-color: #efefef;
+      padding: 0 20px; /* Add 20px padding to both sides */
+
+    }
+
+    h1 {
+      font-size: 2em;
+      margin-top: 50px;
+      color: #333;
+    }
+
+    p {
+      font-size: 1em;
+      margin-top: 20px;
+      color: #444;
+    }
+
+    input {
+      background-color: #5e5cfa;
+      border-radius: 20px;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+
+    #cancel-download, #clear-csv {
+      background-color: #5e5cfa;
+      border-radius: 20px;
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+    }
+
+    #cancel-download:disabled, #clear-csv:disabled {
+      background-color: #bbb !important;
+      cursor: not-allowed;
+    }
+
+    .progress-container {
+      margin-top: 20px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 30px;
+      background-color: #444; /* Darker color */
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress-label {
+      padding: 0 10px;
+      color: #fff;
+      flex: 1;
+    }
+
+    .progress-status {
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 0;
+      color: #000;
+      background-color: #eee;
+    }
+
+    .success-icon {
+      color: #0b0;
+      font-weight: bold;
+    }
+
+    .failure-icon {
+      color: #f00;
+      font-weight: bold;
+    }
+
+    /* Tooltips */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 160px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .end-of-csv {
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 0;
+    }
+    .downloads-completed, .downloads-started {
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 0;
+      color: #000;
+      background-color: #eee;
+    }
+
+    .downloads-cancelled {
+      text-align: center;
+      font-weight: bold;
+      padding: 5px 0;
+      color: #FF0000;
+      background-color: #eee;
+    }
+    .downloads-completed:before, .downloads-started:after, .downloads-cancelled:before {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 2px;
+      background-color: #000;
+      margin: 5px 0;
+    }
+  </style>
+
+</head>
+
+
+<body>
+
+  
+  <!-- Insert Vidyard logo here -->
+  <img src="https://vyexample.com/vysupport/Logo/Horizontal/PNG/Full.png" alt="Vidyard Logo" class="vidyard-logo">
+  <h1>Vidyard Video Downloader</h1>
+  <!-- Rest of your page content -->
+  <p>This program has been created to download the source files of your Vidyard videos with thre right title. You will require a CSV file with the name and download url of the videos.</p>
+
+  <p><li>The CSV can be created manually using this <a href="https://vyexample.com/vysupport/Sample%20CSV.csv" download="SampleCSV.csv">Sample CSV file</a> (only place name and source url in the right columns) or by using Magic CSV, which gives you a file with links to all videos and their names, which can be used as is.</p>
+
+  <p><li>To obtain a Magic CSV, open the Vidyard folder with videos that you want to download. Then copy and paste this url <a href="https://secure.vidyard.com/api/v1/videos/export.csv">https://secure.vidyard.com/api/v1/videos/export.csv</a> in the same window and press enter</p>
+  <p>Once you have the CSV, Upload it below and see the magic happen. All files will be downloaded sequentially. Please click allow when the browser asks for multiple downloads. Check the Browser Console for information on progress</p>
+  <input type="file" id="csv-file" accept=".csv">
+  <input type="button" id="cancel-download" value="Cancel Download" disabled>
+  <input type="hidden" id="clear-csv" value="Clear CSV" disabled>
+  <div class="progress-container" id="progress-container"></div>
+
+  <script>
+    let downloading = false;
+    let csvFile = null;
+    const input = document.getElementById("csv-file");
+    const cancelButton = document.getElementById("cancel-download");
+    const clearCSVButton = document.getElementById("clear-csv");
+    const progressContainer = document.getElementById("progress-container");
+
+    input.addEventListener("change", handleFiles, false);
+    cancelButton.addEventListener("click", cancelDownloads);
+    clearCSVButton.addEventListener("click", clearCSV);
+
+    function handleFiles() {
+      const file = this.files[0];
+      csvFile = file;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const csv = e.target.result;
+        const data = Papa.parse(csv, { header: true }).data.filter(row => row["source_url"] && row["name"]);
+        if (data.length === 0) {
+          // CSV is not in the correct format
+          const csvError = document.createElement("div");
+          csvError.className = "progress-status";
+          csvError.textContent = "CSV is not in the correct format";
+          progressContainer.insertBefore(csvError, progressContainer.firstChild);
+          clearCSV();
+        } else {
+          downloadFiles(data);
+          clearCSVButton.disabled = false;
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function cancelDownloads() {
+      if (downloading) {
+        downloading = false;
+        cancelButton.disabled = true;
+        // Add a line to denote cancellation
+        const endLine = document.createElement("div");
+        endLine.className = "downloads-cancelled";
+        endLine.textContent = "Download Cancelled";
+        progressContainer.insertBefore(endLine, progressContainer.firstChild);
+        // Execute Clear CSV after 1 second
+        setTimeout(clearCSV, 1000);
+      }
+    }
+
+    function clearCSV() {
+      input.value = "";
+      csvFile = null;
+      clearCSVButton.disabled = true;
+    }
+
+    function downloadFiles(urlsAndNames) {
+      let index = 0;
+
+      // Add a status when download starts
+      const downloadStartStatus = document.createElement("div");
+      downloadStartStatus.className = "downloads-started";
+      downloadStartStatus.textContent = "Download Started";
+      progressContainer.insertBefore(downloadStartStatus, progressContainer.firstChild);
+
+      function downloadNext() {
+        if (!downloading) {
+          return;
+        }
+
+        if (index < urlsAndNames.length) {
+          const { source_url, name } = urlsAndNames[index];
+
+          // Add a line to separate each download
+          if (index > 0) {
+            const separatorLine = document.createElement("div");
+            separatorLine.className = "end-of-csv";
+            progressContainer.insertBefore(separatorLine, progressContainer.firstChild);
+          }
+
+          const progressBar = document.createElement("div");
+          progressBar.className = "progress-bar";
+          const progressLabel = document.createElement("div");
+          progressLabel.className = "progress-label";
+          const progressStatus = document.createElement("div");
+          progressStatus.className = "progress-status";
+
+          progressBar.appendChild(progressLabel);
+          progressBar.appendChild(progressStatus);
+          // Insert new progress bars at the beginning of the container
+          progressContainer.insertBefore(progressBar, progressContainer.firstChild);
+
+          progressLabel.textContent = `${index + 1}. Downloading Video: ${name}`;
+          progressStatus.textContent = "Downloading";
+          progressStatus.className += " success-icon";
+
+          fetch(source_url)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.blob();
+            })
+            .then(blob => {
+              const objectURL = window.URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.style.display = "none";
+              document.body.appendChild(a);
+              a.href = objectURL;
+              a.download = name + ".mp4";
+              a.click();
+              window.URL.revokeObjectURL(objectURL);
+              document.body.removeChild(a);
+              progressStatus.textContent = "Success";
+              progressStatus.className += " success-icon";
+              console.log(`Downloaded and renamed: ${name}.mp4`);
+            })
+            .catch(error => {
+              console.error(`Error downloading file: ${error}`);
+              progressStatus.textContent = "Failure";
+              progressStatus.className += " failure-icon";
+            })
+            .finally(() => {
+              index++;
+              setTimeout(downloadNext, 5000);
+              if (index === urlsAndNames.length) {
+                cancelButton.disabled = true;
+                // Add a line to denote downloads completed
+                const endLine = document.createElement("div");
+                endLine.className = "downloads-completed";
+                endLine.textContent = "Download Completed";
+                progressContainer.insertBefore(endLine, progressContainer.firstChild);
+                // Check if a CSV file is present before enabling the "Clear CSV" button
+                clearCSVButton.disabled = !csvFile;
+                // Execute Clear CSV after 1 second
+                setTimeout(clearCSV, 1000);
+              }
+            });
+        } else {
+          console.log("All downloads completed.");
+        }
+      }
+
+      downloading = true;
+      cancelButton.disabled = false;
+      clearCSVButton.disabled = true;
+      downloadNext();
+    }
+  </script>
+</body>
+</html>
